@@ -8,10 +8,13 @@
 #include <vector>
 #include <iostream>
 #include <windows.h>
+#include <limits> //investigacion en referencias
+#include <fstream> //investigacion en referencias
 
 using namespace std;
 
 typedef struct Reactivo{
+    int num;
     string pregunta;
     string op1;
     string op2;
@@ -35,6 +38,20 @@ typedef nodo *pNodo;
 //---------------- Menú Principal ----------------//
 
 void menu();
+void generar(); // Crear examen nuevo (archivo)
+
+//---------------- Archivos ----------------//
+
+void guardarExamen(string nombreArchivo, pNodo inicio); // guardar examen en un archivo
+
+//---------------- Lista Doble ----------------//
+
+bool empty(pNodo inicio); // verificar si esta vacia
+void insertarFinal(pNodo &inicio, pNodo &fin, reactivo nuevo); // agrgar reactivo al final
+
+//---------------- Reactivos ----------------//
+
+reactivo capturarReactivo(int); // crear reactivo
 
 //---------------- Visual ----------------//
 

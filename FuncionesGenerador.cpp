@@ -28,6 +28,7 @@ void menu(){
 
         switch (opc){
         case 1:
+            generar();
             break;
 
         case 2:
@@ -48,6 +49,122 @@ void menu(){
             break;
         }
     }while(opc != 4);
+}
+
+void generar(){
+    reactivo nuevo;
+
+    pNodo inicio = NULL;
+    pNodo fin = NULL;
+
+    int n;
+
+    string nombre;
+
+    cin.ignore(numeric_limits<streamsize>::max(), '\n'); // limpiar buffer
+
+    cout << "Ingrese nombre de archivo: ";
+    getline(cin, nombre);
+
+    cout << "Ingrese num de reactivos de examen: ";
+    cin >> n;
+
+    for(int i = 0; i < n; i++){
+        nuevo = capturarReactivo(i);
+        insertarFinal(inicio, fin, nuevo);
+    }
+
+    guardarExamen(nombre + ".txt", inicio);
+}
+
+
+//---------------- Archivos ----------------//
+
+void guardarExamen(string nombreArchivo, pNodo inicio){
+    ofstream archivo(nombreArchivo.c_str());
+
+    if(!archivo){
+        cout << "Error al crear el archivo." << endl;
+        return;
+    }
+
+    pNodo aux = inicio;
+
+    while(aux != NULL){
+
+        archivo << ":Reactivo;" << aux->fucky.num << endl;
+        archivo << ":p;" << aux->fucky.pregunta << endl;
+        archivo << ":a;" << aux->fucky.op1 << endl;
+        archivo << ":b;" << aux->fucky.op2 << endl;
+        archivo << ":c;" << aux->fucky.op3 << endl;
+        archivo << ":d;" << aux->fucky.op4 << endl;
+        archivo << ":r;" << aux->fucky.respuestaCorrecta << endl;
+        archivo << ":p;" << aux->fucky.puntos << endl;
+        archivo << string(50, '-') << endl;
+
+        aux = aux->siguiente;
+    }
+
+    archivo.close();
+
+    cicloProgreso();
+    cout << "Examen guardado correctamente." << endl;
+    system("pause");
+}
+
+
+//---------------- Lista Doble ----------------//
+
+bool empty(pNodo inicio){
+    return inicio == NULL;
+}
+
+void insertarFinal(pNodo &inicio, pNodo &fin, reactivo nuevo){
+    pNodo aux = new nodo;
+    aux->fucky = nuevo;
+    aux->siguiente = NULL;
+
+    if(empty(inicio)){
+        inicio = aux;
+        fin = aux;
+    }else{
+        fin->siguiente = aux;
+        fin = aux;
+    }
+}
+
+
+//---------------- Reactivos ----------------//
+
+reactivo capturarReactivo(int i){
+    reactivo aux;
+
+    aux.num = i;
+
+    cin.ignore(numeric_limits<streamsize>::max(), '\n'); // limpiar buffer
+
+    cout << "Ingrese Pregunta: ";
+    getline(cin, aux.pregunta);
+
+    cout << "Ingrese opcion a): ";
+    getline(cin, aux.op1);
+
+    cout << "Ingrese opcion b): ";
+    getline(cin, aux.op2);
+
+    cout << "Ingrese opcion c): ";
+    getline(cin, aux.op3);
+
+    cout << "Ingrese opcion d): ";
+    getline(cin, aux.op4);
+
+    cout << "Ingrese respuesta correcta (a,b,c,d): ";
+    cin >> aux.respuestaCorrecta;
+
+    cout << "Ingrese puntos de reactivo: ";
+    cin >> aux.puntos;
+
+    return aux;
 }
 
 
