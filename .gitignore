@@ -1,2 +1,4 @@
 *.exe
 outputs/
+*.dat
+*.txt

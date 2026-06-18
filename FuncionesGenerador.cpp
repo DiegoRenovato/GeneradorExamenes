@@ -2,7 +2,7 @@
 
 //---------------- Menú Principal ----------------//
 
-void menu(){
+void menu(archivo **archivos, int* cantidad){
     int opc, n=0;
 
     do{
@@ -28,7 +28,7 @@ void menu(){
 
         switch (opc){
         case 1:
-            generar();
+            generar(archivos, cantidad);
             break;
 
         case 2:
@@ -39,6 +39,7 @@ void menu(){
 
         case 4:
             system("cls || clear");
+            guardarArchivo(archivos, cantidad);
             cicloProgreso();
             printf("Saliendo...\n");
             system("pause");
@@ -51,8 +52,10 @@ void menu(){
     }while(opc != 4);
 }
 
-void generar(){
+void generar(archivo** archivos, int* cantidad){
+
     reactivo nuevo;
+    bool repetido = false;
 
     pNodo inicio = NULL;
     pNodo fin = NULL;
@@ -63,10 +66,25 @@ void generar(){
 
     cin.ignore(numeric_limits<streamsize>::max(), '\n'); // limpiar buffer
 
-    cout << "Ingrese nombre de archivo: ";
-    getline(cin, nombre);
+    do{
+        system("cls || clear");
+        repetido = false;
+        cout << "Ingrese nombre de archivo: ";
+        getline(cin, nombre);
 
-    cout << "Ingrese num de reactivos de examen: ";
+        for(int i = 0; i < *cantidad; i++){
+            if((*archivos + i)->nombreArchivo == (nombre + ".txt")){
+                repetido = true;
+
+                cout << "Nombre de archivo ya existente. Intente de nuevo";
+                system("pause");
+                break;
+            }
+        }
+    }while(repetido);
+
+
+    cout << "Ingrese numero de reactivos de examen: ";
     cin >> n;
 
     for(int i = 0; i < n; i++){
@@ -75,6 +93,26 @@ void generar(){
     }
 
     guardarExamen(nombre + ".txt", inicio);
+
+    archivo* nuevoArreglo = new archivo[*cantidad + 1];
+
+    for(int i = 0; i < *cantidad; i++){
+        nuevoArreglo[i] = (*archivos)[i];
+    }
+
+    
+
+    if(nuevoArreglo == NULL){
+        printf("Ocurrio un error al momento de reservar memoria");
+        return;
+    }
+
+    delete[] *archivos;
+
+    *archivos = nuevoArreglo;
+
+    (*archivos)[*cantidad].nombreArchivo = nombre + ".txt";
+    (*cantidad)++;
 }
 
 
@@ -110,6 +148,63 @@ void guardarExamen(string nombreArchivo, pNodo inicio){
     cicloProgreso();
     cout << "Examen guardado correctamente." << endl;
     system("pause");
+}
+
+void cargarArchivo(archivo **archivos, int *cantidad){
+
+    FILE *f = fopen("examenesGuardados.dat", "rb");
+
+    if(f == NULL){
+        printf("No hay datos previos\n");
+        *cantidad = 0;
+        *archivos = NULL;
+        return;
+    }
+
+    fread(cantidad, sizeof(int), 1, f);
+
+    *archivos = new archivo[*cantidad];
+
+    for(int i = 0; i < *cantidad; i++){
+
+        int longitud;
+
+        fread(&longitud, sizeof(int), 1, f);
+
+        char* buffer = new char[longitud + 1];
+
+        fread(buffer, sizeof(char), longitud, f);
+
+        buffer[longitud] = '\0';
+
+        (*archivos)[i].nombreArchivo = buffer;
+
+        delete[] buffer;
+    }
+
+    fclose(f);
+
+    printf("Datos cargados correctamente\n");
+}
+
+void guardarArchivo(archivo **archivos, int *cantidad){
+    FILE* f = fopen("examenesGuardados.dat", "wb");
+
+    fwrite(cantidad, sizeof(int), 1, f);
+
+    for(int i = 0; i < *cantidad; i++){
+
+    int longitud = (*archivos)[i].nombreArchivo.length();
+
+    fwrite(&longitud, sizeof(int), 1, f);
+
+    fwrite((*archivos)[i].nombreArchivo.c_str(),
+           sizeof(char),
+           longitud,
+           f);
+    }
+
+    fclose(f);
 }
 
 

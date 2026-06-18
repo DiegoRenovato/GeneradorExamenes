@@ -31,18 +31,24 @@ typedef struct Nodo{
     Nodo* anterior;
 }nodo;
 
+typedef struct Archivo{
+    string nombreArchivo;
+}archivo;
+
 typedef nodo *pNodo;
 
 //--------------- Prototipos ---------------//
 
 //---------------- Menú Principal ----------------//
 
-void menu();
-void generar(); // Crear examen nuevo (archivo)
+void menu(archivo**, int*);
+void generar(archivo**, int*); // Crear examen nuevo (archivo)
 
 //---------------- Archivos ----------------//
 
 void guardarExamen(string nombreArchivo, pNodo inicio); // guardar examen en un archivo
+void cargarArchivo(archivo**, int*); 
+void guardarArchivo(archivo**, int);
 
 //---------------- Lista Doble ----------------//
 
