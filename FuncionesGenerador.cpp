@@ -32,6 +32,7 @@ void menu(archivo **archivos, int* cantidad){
             break;
 
         case 2:
+            modificar(archivos, cantidad);
             break;
 
         case 3:
@@ -115,8 +116,105 @@ void generar(archivo** archivos, int* cantidad){
     (*cantidad)++;
 }
 
+void modificar(archivo** archivos, int *cantidad){
+    int elegido = listarExamenes(archivos, cantidad);
+    if(elegido == -1)
+        return;
+    pNodo inicio = NULL;
+    pNodo fin = NULL;
+    cargarExamen((*archivos + (elegido - 1))->nombreArchivo, inicio, fin);
+
+    if(inicio == NULL){
+        cout << "El examen esta vacio";
+        return;
+    }
+
+    cout << "Examen cargado correctamente.\n";
+
+    pNodo actual = inicio;
+
+    navegarReactivos(actual);
+
+    guardarExamen((*archivos + (elegido - 1))->nombreArchivo, inicio);
+
+}
 
 //---------------- Archivos ----------------//
+
+void cargarExamen(string nombreArchivo, pNodo &inicio, pNodo &fin){
+
+    ifstream archivo(nombreArchivo);
+
+    if(!archivo){
+        cout << "No se pudo abrir el archivo\n";
+        return;
+    }
+
+    string linea;
+    reactivo nuevo;
+
+    while(getline(archivo, linea)){
+        string etiqueta;
+        string valor;
+
+        size_t pos = linea.find(';');
+
+        if(pos != string::npos){
+
+            etiqueta = linea.substr(0, pos);
+            valor = linea.substr(pos + 1);
+        }
+
+        if(etiqueta == ":Reactivo"){
+
+            nuevo = reactivo();
+            nuevo.num = stoi(valor);
+
+        }
+        else if(etiqueta == ":q"){
+
+            nuevo.pregunta = valor;
+
+        }
+        else if(etiqueta == ":a"){
+
+            nuevo.op1 = valor;
+
+        }
+        else if(etiqueta == ":b"){
+
+            nuevo.op2 = valor;
+
+        }
+        else if(etiqueta == ":c"){
+
+            nuevo.op3 = valor;
+
+        }
+        else if(etiqueta == ":d"){
+
+            nuevo.op4 = valor;
+
+        }
+        else if(etiqueta == ":r"){
+
+            nuevo.respuestaCorrecta = valor[0];
+
+        }
+        else if(etiqueta == ":p"){
+
+            nuevo.puntos = stof(valor);
+
+        }
+
+        else if(linea.find("-----") == 0){
+
+            insertarFinal(inicio, fin, nuevo);
+        }
+    }
+
+    archivo.close();
+}
 
 void guardarExamen(string nombreArchivo, pNodo inicio){
     ofstream archivo(nombreArchivo.c_str());
@@ -131,7 +229,7 @@ void guardarExamen(string nombreArchivo, pNodo inicio){
     while(aux != NULL){
 
         archivo << ":Reactivo;" << aux->fucky.num << endl;
-        archivo << ":p;" << aux->fucky.pregunta << endl;
+        archivo << ":q;" << aux->fucky.pregunta << endl;
         archivo << ":a;" << aux->fucky.op1 << endl;
         archivo << ":b;" << aux->fucky.op2 << endl;
         archivo << ":c;" << aux->fucky.op3 << endl;
@@ -148,6 +246,47 @@ void guardarExamen(string nombreArchivo, pNodo inicio){
     cicloProgreso();
     cout << "Examen guardado correctamente." << endl;
     system("pause");
+}
+
+int listarExamenes(archivo** archivos, int* cantidad){
+    int opc, anchoInterno = 34;
+    do{
+        system("cls || clear");
+        system("color 0B");
+        //system("color 02"); -> verde
+        //system("color 03"); -> aqua
+        //system("color 0A"); -> verde claro
+        //system("color 0B"); -> aqua claro
+        //system("color 0E"); -> amarillo claro
+        cout << "╔══════════════════════════════════╗\n";
+        cout << "║             Examenes             ║\n";
+        cout << "╠══════════════════════════════════╣\n";
+        for(int i = 0; i < *cantidad; i++){
+            int espacios = anchoInterno - ((*archivos)[i].nombreArchivo.length() + to_string(i).length() + 2);
+            int izq = 2;
+            int der = espacios - izq;
+            cout << "║"
+            << string(izq, ' ')
+            << i+1 << ") " << (*archivos)[i].nombreArchivo
+            << string(der, ' ')
+            << "║\n";
+        }
+        cout << "║  " << *cantidad + 1 << ") Salir                        ║\n";
+        cout << "╠══════════════════════════════════╣\n";
+        cout << "║  Seleccione una opción:          ║\n";
+        cout << "╚══════════════════════════════════╝\n";
+        cout << "➜ ";
+        scanf("%d", &opc);
+
+        if(opc >= 1 && opc <= *cantidad){
+            return opc;
+        }else if(opc == (*cantidad + 1)){
+            return -1;
+        }else{
+            cout << "Opcion Invalida. Intente de nuevo";
+            system("Pause");
+        }
+    }while(opc < 1 || opc > (*cantidad + 1));
 }
 
 void cargarArchivo(archivo **archivos, int *cantidad){
@@ -188,6 +327,7 @@ void cargarArchivo(archivo **archivos, int *cantidad){
 }
 
 void guardarArchivo(archivo **archivos, int *cantidad){
+
     FILE* f = fopen("examenesGuardados.dat", "wb");
 
     fwrite(cantidad, sizeof(int), 1, f);
@@ -207,7 +347,6 @@ void guardarArchivo(archivo **archivos, int *cantidad){
     fclose(f);
 }
 
-
 //---------------- Lista Doble ----------------//
 
 bool empty(pNodo inicio){
@@ -218,14 +357,68 @@ void insertarFinal(pNodo &inicio, pNodo &fin, reactivo nuevo){
     pNodo aux = new nodo;
     aux->fucky = nuevo;
     aux->siguiente = NULL;
+    aux->anterior = NULL;
 
     if(empty(inicio)){
         inicio = aux;
         fin = aux;
     }else{
+        aux->anterior = fin;
         fin->siguiente = aux;
         fin = aux;
     }
+}
+
+pNodo siguienteReactivo(pNodo &actual){
+    if(actual == NULL)
+        return NULL;
+
+    return actual->siguiente;
+}
+
+pNodo anteriorReactivo(pNodo &actual){
+    if(actual == NULL)
+        return NULL;
+
+    return actual->anterior;
+}
+
+void navegarReactivos(pNodo &actual){
+    int tecla;
+
+    do{
+        system("cls || clear");
+        mostrarReactivo(actual);
+
+        cout << "\n\n";
+        cout << "← Anterior    → Siguiente\n";
+        cout << "ENTER Modificar\n";
+        cout << "ESC Salir\n";
+
+        tecla = getch();
+        if(tecla == 224){
+            tecla = getch();
+
+            switch(tecla){
+                //flecha izq
+                case 75: if(anteriorReactivo(actual) != NULL)
+                            actual = anteriorReactivo(actual);
+                    break;
+
+                //flecha der
+                case 77: if(siguienteReactivo(actual) != NULL)
+                            actual = siguienteReactivo(actual);
+                    break;
+            }
+        //ENTER
+        }else if(tecla == 13){
+            system("cls || clear");
+            editarReactivo(actual);
+
+            cout << "Reactivo Actualizado";
+            system("pause");
+        }
+    }while(tecla != 27); //ESC
 }
 
 
@@ -261,6 +454,52 @@ reactivo capturarReactivo(int i){
 
     return aux;
 }
+
+void mostrarReactivo(pNodo actual){
+    cout << "====================================\n";
+    cout << "Reactivo #" << actual->fucky.num << endl;
+    cout << "====================================\n\n";
+
+    cout << actual->fucky.pregunta << "\n\n";
+
+    cout << "a) " << actual->fucky.op1 << endl;
+    cout << "b) " << actual->fucky.op2 << endl;
+    cout << "c) " << actual->fucky.op3 << endl;
+    cout << "d) " << actual->fucky.op4 << endl;
+
+    cout << "\nRespuesta correcta: "
+         << actual->fucky.respuestaCorrecta;
+
+    cout << "\nPuntos: "
+         << actual->fucky.puntos
+         << endl;
+}
+
+void editarReactivo(pNodo actual){
+    cin.ignore();
+
+    cout << "Pregunta: ";
+    getline(cin, actual->fucky.pregunta);
+
+    cout << "Opcion a): ";
+    getline(cin, actual->fucky.op1);
+
+    cout << "Opcion b): ";
+    getline(cin, actual->fucky.op2);
+
+    cout << "Opcion c): ";
+    getline(cin, actual->fucky.op3);
+
+    cout << "Opcion d): ";
+    getline(cin, actual->fucky.op4);
+
+    cout << "Respuesta correcta: ";
+    cin >> actual->fucky.respuestaCorrecta;
+
+    cout << "Puntos: ";
+    cin >> actual->fucky.puntos;
+}
+
 
 
 //---------------- Visual ----------------//

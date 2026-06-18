@@ -10,6 +10,7 @@
 #include <windows.h>
 #include <limits> //investigacion en referencias
 #include <fstream> //investigacion en referencias
+#include <conio.h> //investigacion en referencias
 
 using namespace std;
 
@@ -42,22 +43,32 @@ typedef nodo *pNodo;
 //---------------- Menú Principal ----------------//
 
 void menu(archivo**, int*);
+
 void generar(archivo**, int*); // Crear examen nuevo (archivo)
+void modificar(archivo**, int*); // Modificar examen existente
 
 //---------------- Archivos ----------------//
 
+void cargarExamen(string nombreArchivo, pNodo &inicio, pNodo &fin); // cargar examen desde un archivo
 void guardarExamen(string nombreArchivo, pNodo inicio); // guardar examen en un archivo
-void cargarArchivo(archivo**, int*); 
-void guardarArchivo(archivo**, int);
+int listarExamenes(archivo**, int*); // mostrar examenes existentes
+void cargarArchivo(archivo**, int*);
+void guardarArchivo(archivo**, int*);
 
 //---------------- Lista Doble ----------------//
 
 bool empty(pNodo inicio); // verificar si esta vacia
 void insertarFinal(pNodo &inicio, pNodo &fin, reactivo nuevo); // agrgar reactivo al final
+pNodo siguienteReactivo(pNodo& actual); // ddesplazar al siguiente reactivo
+pNodo anteriorReactivo(pNodo& actual); // desplazar al reactivo anterior
+void navegarReactivos(pNodo&); // recorrer lista de reactivos
 
 //---------------- Reactivos ----------------//
 
 reactivo capturarReactivo(int); // crear reactivo
+void mostrarReactivo(pNodo actual); // mostrar informacion de un reactivo
+void editarReactivo(pNodo actual); // modificar informacion de un reactivo
+
 
 //---------------- Visual ----------------//
 
