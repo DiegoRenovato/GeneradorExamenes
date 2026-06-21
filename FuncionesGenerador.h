@@ -25,8 +25,13 @@ typedef struct Reactivo{
     float puntos;
 }reactivo;
 
+typedef struct Respuesta{
+    char r;
+}respuesta;
+
 typedef struct Nodo{
     reactivo fucky;
+    respuesta fucky2;
 
     Nodo* siguiente;
     Nodo* anterior;
@@ -35,6 +40,8 @@ typedef struct Nodo{
 typedef struct Archivo{
     string nombreArchivo;
 }archivo;
+
+
 
 typedef nodo *pNodo;
 
@@ -46,6 +53,7 @@ void menu(archivo**, int*);
 
 void generar(archivo**, int*); // Crear examen nuevo (archivo)
 void modificar(archivo**, int*); // Modificar examen existente
+void aplicar(archivo**, int*); // Aplicar examen
 
 //---------------- Archivos ----------------//
 
@@ -59,16 +67,21 @@ void guardarArchivo(archivo**, int*);
 
 bool empty(pNodo inicio); // verificar si esta vacia
 void insertarFinal(pNodo &inicio, pNodo &fin, reactivo nuevo); // agrgar reactivo al final
+void destruirLista(pNodo &inicio); // liberar memoria
 pNodo siguienteReactivo(pNodo& actual); // ddesplazar al siguiente reactivo
 pNodo anteriorReactivo(pNodo& actual); // desplazar al reactivo anterior
-void navegarReactivos(pNodo&); // recorrer lista de reactivos
+void navegarReactivos(pNodo&, int); // recorrer lista de reactivos
 
 //---------------- Reactivos ----------------//
 
 reactivo capturarReactivo(int); // crear reactivo
-void mostrarReactivo(pNodo actual); // mostrar informacion de un reactivo
+void mostrarReactivo(pNodo actual, int); // mostrar informacion de un reactivo
 void editarReactivo(pNodo actual); // modificar informacion de un reactivo
 
+//---------------- Aplicar ----------------//
+
+void responderReactivo(pNodo actual); // registrar respuesta de un reactivo
+float calificar(pNodo inicio); // calcular valor total del examen
 
 //---------------- Visual ----------------//
 

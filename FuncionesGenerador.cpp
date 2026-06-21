@@ -36,6 +36,7 @@ void menu(archivo **archivos, int* cantidad){
             break;
 
         case 3:
+            aplicar(archivos, cantidad);
             break;
 
         case 4:
@@ -116,7 +117,7 @@ void generar(archivo** archivos, int* cantidad){
     (*cantidad)++;
 }
 
-void modificar(archivo** archivos, int *cantidad){
+void modificar(archivo** archivos, int*cantidad){
     int elegido = listarExamenes(archivos, cantidad);
     if(elegido == -1)
         return;
@@ -133,11 +134,33 @@ void modificar(archivo** archivos, int *cantidad){
 
     pNodo actual = inicio;
 
-    navegarReactivos(actual);
+    navegarReactivos(actual, 1);
 
     guardarExamen((*archivos + (elegido - 1))->nombreArchivo, inicio);
 
 }
+
+void aplicar(archivo** archivos, int* cantidad){
+    int elegido = listarExamenes(archivos, cantidad);
+    if(elegido == -1)
+        return;
+    pNodo inicio = NULL;
+    pNodo fin = NULL;
+    cargarExamen((*archivos + (elegido - 1))->nombreArchivo, inicio, fin);
+
+    if(inicio == NULL){
+        cout << "El examen esta vacio";
+        return;
+    }
+
+    cout << "Examen cargado correctamente.\n";
+
+    pNodo actual = inicio;
+
+    navegarReactivos(actual, 2);
+    calificar(inicio);
+}
+
 
 //---------------- Archivos ----------------//
 
@@ -347,6 +370,7 @@ void guardarArchivo(archivo **archivos, int *cantidad){
     fclose(f);
 }
 
+
 //---------------- Lista Doble ----------------//
 
 bool empty(pNodo inicio){
@@ -359,6 +383,8 @@ void insertarFinal(pNodo &inicio, pNodo &fin, reactivo nuevo){
     aux->siguiente = NULL;
     aux->anterior = NULL;
 
+    aux->fucky2.r = '\0';
+
     if(empty(inicio)){
         inicio = aux;
         fin = aux;
@@ -366,6 +392,19 @@ void insertarFinal(pNodo &inicio, pNodo &fin, reactivo nuevo){
         aux->anterior = fin;
         fin->siguiente = aux;
         fin = aux;
+    }
+}
+
+void destruirLista(pNodo &inicio){
+
+    pNodo borrar;
+
+    while(inicio != NULL){
+
+        borrar = inicio;
+        inicio = inicio->siguiente;
+
+        delete borrar;
     }
 }
 
@@ -383,17 +422,25 @@ pNodo anteriorReactivo(pNodo &actual){
     return actual->anterior;
 }
 
-void navegarReactivos(pNodo &actual){
+void navegarReactivos(pNodo &actual, int id){
     int tecla;
 
     do{
         system("cls || clear");
-        mostrarReactivo(actual);
+        mostrarReactivo(actual, id);
 
         cout << "\n\n";
         cout << "← Anterior    → Siguiente\n";
-        cout << "ENTER Modificar\n";
-        cout << "ESC Salir\n";
+        if(id == 1){
+            cout << "ENTER Modificar\n";
+            cout << "ESC Salir\n";
+        }else{
+            if(actual->fucky2.r == '\0'){
+                cout << "ENTER Responder\n";
+            }
+            cout << "ESC Calificar\n";
+        }
+
 
         tecla = getch();
         if(tecla == 224){
@@ -412,11 +459,16 @@ void navegarReactivos(pNodo &actual){
             }
         //ENTER
         }else if(tecla == 13){
-            system("cls || clear");
-            editarReactivo(actual);
+            if(id == 1){
+                system("cls || clear");
+                editarReactivo(actual);
 
-            cout << "Reactivo Actualizado";
-            system("pause");
+                cout << "Reactivo Actualizado";
+                system("pause");
+            }else{
+                if(actual->fucky2.r == '\0')
+                    responderReactivo(actual);
+            }
         }
     }while(tecla != 27); //ESC
 }
@@ -455,7 +507,7 @@ reactivo capturarReactivo(int i){
     return aux;
 }
 
-void mostrarReactivo(pNodo actual){
+void mostrarReactivo(pNodo actual, int id){
     cout << "====================================\n";
     cout << "Reactivo #" << actual->fucky.num << endl;
     cout << "====================================\n\n";
@@ -467,8 +519,13 @@ void mostrarReactivo(pNodo actual){
     cout << "c) " << actual->fucky.op3 << endl;
     cout << "d) " << actual->fucky.op4 << endl;
 
-    cout << "\nRespuesta correcta: "
-         << actual->fucky.respuestaCorrecta;
+    if(id == 1){
+        cout << "\nRespuesta correcta: "<< actual->fucky.respuestaCorrecta;
+    }else{
+        if(actual->fucky2.r != '\0'){
+            cout << "Tu respuesta: " << actual->fucky2.r;
+        }
+    }
 
     cout << "\nPuntos: "
          << actual->fucky.puntos
@@ -500,6 +557,62 @@ void editarReactivo(pNodo actual){
     cin >> actual->fucky.puntos;
 }
 
+
+//---------------- Aplicar ----------------//
+
+void responderReactivo(pNodo actual){
+    char resp;
+
+    cout << "\nIngrese su respuesta (a,b,c,d): ";
+    cin >> resp;
+
+    resp = tolower(resp);
+
+    while(resp != 'a' &&
+          resp != 'b' &&
+          resp != 'c' &&
+          resp != 'd'){
+
+        cout << "Respuesta invalida. Intente nuevamente: ";
+        cin >> resp;
+
+        resp = tolower(resp);
+    }
+
+    actual->fucky2.r = resp;
+}
+
+float calificar(pNodo inicio){
+    int correctas = 0, cont = 0;
+    float puntos = 0, calif = 0, puntosTotales = 0;
+
+    pNodo aux = inicio;
+
+    while(aux != NULL){
+
+        if(aux->fucky2.r ==
+           aux->fucky.respuestaCorrecta){
+
+            correctas++;
+            puntos += aux->fucky.puntos;
+        }
+        puntosTotales += aux->fucky.puntos;
+        cont++;
+
+        aux = aux->siguiente;
+    }
+ 
+
+    calif = (puntos * 10)/puntosTotales;
+
+    cout << "\nResultados\n";
+    cout << "Correctas: " << correctas << endl;
+    cout << "Puntaje: " << puntos << endl;
+    cout << "Calificacion: " << calif << endl;
+
+
+    system("pause");
+}
 
 
 //---------------- Visual ----------------//
