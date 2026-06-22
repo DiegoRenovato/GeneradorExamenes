@@ -1,0 +1,27 @@
+:Reactivo;0
+:q;Pregunta 1
+:a;opcion a
+:b;opcion b
+:c;opcion c
+:d;opcion d
+:r;a
+:p;10
+--------------------------------------------------
+:Reactivo;1
+:q;Pregunta 2
+:a;opcion a
+:b;opcion b
+:c;opcion c
+:d;opcion d
+:r;b
+:p;10
+--------------------------------------------------
+:Reactivo;2
+:q;Pregunta 3
+:a;opcion a
+:b;opcion b
+:c;opcion c
+:d;opcion d
+:r;c
+:p;10
+--------------------------------------------------

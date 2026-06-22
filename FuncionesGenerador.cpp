@@ -19,7 +19,7 @@ void menu(archivo **archivos, int* cantidad){
         cout << "║  1) Generar Examen               ║\n";
         cout << "║  2) Modificar Examen             ║\n";
         cout << "║  3) Aplicar Examen               ║\n";
-        cout << "║  4) Salir                        ║\n";
+        cout << "║  4) Guardar y Salir              ║\n";
         cout << "╠══════════════════════════════════╣\n";
         cout << "║  Seleccione una opción:          ║\n";
         cout << "╚══════════════════════════════════╝\n";
@@ -71,14 +71,17 @@ void generar(archivo** archivos, int* cantidad){
     do{
         system("cls || clear");
         repetido = false;
-        cout << "Ingrese nombre de archivo: ";
+        cout << "\n╔══════════════════════════════════╗\n";
+        cout << "║           NUEVO EXAMEN           ║\n";
+        cout << "╚══════════════════════════════════╝\n";
+        cout << "\nIngrese nombre de archivo: ";
         getline(cin, nombre);
 
         for(int i = 0; i < *cantidad; i++){
             if((*archivos + i)->nombreArchivo == (nombre + ".txt")){
                 repetido = true;
 
-                cout << "Nombre de archivo ya existente. Intente de nuevo";
+                cout << "\n\nNombre de archivo ya existente. Intente de nuevo\n";
                 system("pause");
                 break;
             }
@@ -86,7 +89,7 @@ void generar(archivo** archivos, int* cantidad){
     }while(repetido);
 
 
-    cout << "Ingrese numero de reactivos de examen: ";
+    cout << "\nIngrese numero de reactivos de examen: ";
     cin >> n;
 
     for(int i = 0; i < n; i++){
@@ -105,7 +108,7 @@ void generar(archivo** archivos, int* cantidad){
     
 
     if(nuevoArreglo == NULL){
-        printf("Ocurrio un error al momento de reservar memoria");
+        printf("\nOcurrio un error al momento de reservar memoria");
         return;
     }
 
@@ -115,6 +118,8 @@ void generar(archivo** archivos, int* cantidad){
 
     (*archivos)[*cantidad].nombreArchivo = nombre + ".txt";
     (*cantidad)++;
+
+    destruirLista(inicio);
 }
 
 void modificar(archivo** archivos, int*cantidad){
@@ -126,17 +131,19 @@ void modificar(archivo** archivos, int*cantidad){
     cargarExamen((*archivos + (elegido - 1))->nombreArchivo, inicio, fin);
 
     if(inicio == NULL){
-        cout << "El examen esta vacio";
+        cout << "\nEl examen esta vacio";
         return;
     }
 
-    cout << "Examen cargado correctamente.\n";
+    cout << "\nExamen cargado correctamente.\n";
 
     pNodo actual = inicio;
 
     navegarReactivos(actual, 1);
 
     guardarExamen((*archivos + (elegido - 1))->nombreArchivo, inicio);
+
+    destruirLista(inicio);
 
 }
 
@@ -159,6 +166,8 @@ void aplicar(archivo** archivos, int* cantidad){
 
     navegarReactivos(actual, 2);
     calificar(inicio);
+
+    destruirLista(inicio);
 }
 
 
@@ -285,7 +294,7 @@ int listarExamenes(archivo** archivos, int* cantidad){
         cout << "║             Examenes             ║\n";
         cout << "╠══════════════════════════════════╣\n";
         for(int i = 0; i < *cantidad; i++){
-            int espacios = anchoInterno - ((*archivos)[i].nombreArchivo.length() + to_string(i).length() + 2);
+            int espacios = anchoInterno - ((*archivos)[i].nombreArchivo.length() + to_string(i + 1).length() + 2);
             int izq = 2;
             int der = espacios - izq;
             cout << "║"
@@ -430,15 +439,15 @@ void navegarReactivos(pNodo &actual, int id){
         mostrarReactivo(actual, id);
 
         cout << "\n\n";
-        cout << "← Anterior    → Siguiente\n";
+        cout << "[←] Anterior         Siguiente [→]\n";
         if(id == 1){
-            cout << "ENTER Modificar\n";
-            cout << "ESC Salir\n";
+            cout << "\n[ENTER] Modificar      [ESC] Salir\n";
         }else{
             if(actual->fucky2.r == '\0'){
-                cout << "ENTER Responder\n";
+                cout << "\n[ENTER] Responder  [ESC] Calificar\n";
+            }else{
+                cout << "\n        [ESC] Calificar        \n";
             }
-            cout << "ESC Calificar\n";
         }
 
 
@@ -463,7 +472,7 @@ void navegarReactivos(pNodo &actual, int id){
                 system("cls || clear");
                 editarReactivo(actual);
 
-                cout << "Reactivo Actualizado";
+                cout << "\nReactivo Actualizado\n\n";
                 system("pause");
             }else{
                 if(actual->fucky2.r == '\0')
@@ -479,11 +488,24 @@ void navegarReactivos(pNodo &actual, int id){
 reactivo capturarReactivo(int i){
     reactivo aux;
 
+    int anchoInterno = 34;
+    int espacios = anchoInterno - (9 + to_string(i + 1).length());
+    int izq = espacios / 2;
+    int der = espacios - izq;
+
+    cout << "\n╔══════════════════════════════════╗\n";
+    cout << "║"
+         << string(izq, ' ')
+         << "Reactivo " << i + 1
+         << string(der, ' ')
+         << "║\n";
+    cout << "╚══════════════════════════════════╝\n";
+
     aux.num = i;
 
     cin.ignore(numeric_limits<streamsize>::max(), '\n'); // limpiar buffer
 
-    cout << "Ingrese Pregunta: ";
+    cout << "\nIngrese Pregunta: ";
     getline(cin, aux.pregunta);
 
     cout << "Ingrese opcion a): ";
@@ -508,9 +530,18 @@ reactivo capturarReactivo(int i){
 }
 
 void mostrarReactivo(pNodo actual, int id){
-    cout << "====================================\n";
-    cout << "Reactivo #" << actual->fucky.num << endl;
-    cout << "====================================\n\n";
+    int anchoInterno = 34;
+    int espacios = anchoInterno - (9 + to_string(actual->fucky.num + 1).length());
+    int izq = espacios / 2;
+    int der = espacios - izq;
+
+    cout << "\n╔══════════════════════════════════╗\n";
+    cout << "║"
+         << string(izq, ' ')
+         << "Reactivo " << actual->fucky.num + 1
+         << string(der, ' ')
+         << "║\n";
+    cout << "╚══════════════════════════════════╝\n\n";
 
     cout << actual->fucky.pregunta << "\n\n";
 
@@ -533,6 +564,9 @@ void mostrarReactivo(pNodo actual, int id){
 }
 
 void editarReactivo(pNodo actual){
+    cout << "\n╔══════════════════════════════════╗\n";
+    cout << "║         EDITAR REACTIVO          ║\n";
+    cout << "╚══════════════════════════════════╝\n\n";
     cin.ignore();
 
     cout << "Pregunta: ";
@@ -605,11 +639,14 @@ float calificar(pNodo inicio){
 
     calif = (puntos * 10)/puntosTotales;
 
-    cout << "\nResultados\n";
+    system("cls || clear");
+    cout << "\n╔══════════════════════════════════╗\n";
+    cout << "║            RESULTADOS            ║\n";
+    cout << "╚══════════════════════════════════╝\n\n";
     cout << "Correctas: " << correctas << endl;
     cout << "Puntaje: " << puntos << endl;
     cout << "Calificacion: " << calif << endl;
-
+    cout << "\n\n";
 
     system("pause");
 }
